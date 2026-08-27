@@ -1,20 +1,16 @@
-# Utiliser une image Node.js officielle comme base
-FROM node:18-alpine
-
-# Créer et définir le répertoire de travail
+# Stage 1 : installation des dépendances
+FROM node:18-bookworm-slim AS builder
 WORKDIR /app
-
-# Copier les fichiers package.json et package-lock.json
 COPY package*.json ./
-RUN rm -rf node_modules && npm cache clean --force
-# Installer les dépendances
-RUN npm install
+RUN npm ci --omit=dev
 
-# Copier le reste des fichiers du projet
-COPY . .
-
-# Exposer le port utilisé par l'application
+# Stage 2 : image finale
+FROM node:18-bookworm-slim
+WORKDIR /app
+RUN groupadd -r appgroup && useradd -r -g appgroup appuser
+COPY --from=builder /app/node_modules ./node_modules
+COPY src ./src
+COPY package*.json ./
+USER appuser
 EXPOSE 3002
-
-# Commande pour démarrer l'application
-CMD ["npm", "start"]
+CMD ["node", "src/app.js"]
