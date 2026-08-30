@@ -1,0 +1,156 @@
+version: '3.8'
+
+services:
+  reverse-proxy:
+    image: ${REGISTRY_USER:-ecommerce}/nginx:${IMAGE_TAG:-latest}
+    build:
+      context: ./nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    secrets:
+      - ssl_certificate
+      - ssl_key
+    volumes:
+      - ./certs/site.crt:/etc/nginx/certs/site.crt:ro
+      - ./certs/site.key:/etc/nginx/certs/site.key:ro
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+      restart_policy:
+        condition: on-failure
+    networks:
+      - public
+      - private
+    depends_on:
+      - frontend
+      - auth-service
+      - product-service
+      - order-service
+
+  frontend:
+    image: ${REGISTRY_USER:-ecommerce}/frontend:${IMAGE_TAG:-latest}
+    deploy:
+      replicas: 3
+      update_config:
+        parallelism: 1
+        delay: 10s
+        order: start-first
+      placement:
+        constraints:
+          - node.role == worker
+      restart_policy:
+        condition: on-failure
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    environment:
+      NODE_ENV: production
+      VITE_AUTH_SERVICE_URL: http://auth-service:3001
+      VITE_PRODUCT_SERVICE_URL: http://product-service:3000
+      VITE_ORDER_SERVICE_URL: http://order-service:3002
+    networks:
+      - public
+      - private
+
+  auth-service:
+    image: ${REGISTRY_USER:-ecommerce}/auth-service:${IMAGE_TAG:-latest}
+    deploy:
+      replicas: 2
+      placement:
+        constraints:
+          - node.role == worker
+      restart_policy:
+        condition: on-failure
+    environment:
+      NODE_ENV: production
+      MONGODB_URI: mongodb://mongodb:27017/auth
+      JWT_SECRET_FILE: /run/secrets/jwt_secret
+    secrets:
+      - jwt_secret
+    networks:
+      - private
+    depends_on:
+      - mongodb
+
+  product-service:
+    image: ${REGISTRY_USER:-ecommerce}/product-service:${IMAGE_TAG:-latest}
+    deploy:
+      replicas: 2
+      placement:
+        constraints:
+          - node.role == worker
+      restart_policy:
+        condition: on-failure
+    environment:
+      NODE_ENV: production
+      MONGODB_URI: mongodb://mongodb:27017/ecommerce
+      JWT_SECRET_FILE: /run/secrets/jwt_secret
+    secrets:
+      - jwt_secret
+    networks:
+      - private
+    depends_on:
+      - mongodb
+
+  order-service:
+    image: ${REGISTRY_USER:-ecommerce}/order-service:${IMAGE_TAG:-latest}
+    deploy:
+      replicas: 2
+      placement:
+        constraints:
+          - node.role == worker
+      restart_policy:
+        condition: on-failure
+    environment:
+      NODE_ENV: production
+      MONGODB_URI: mongodb://mongodb:27017/orders
+      JWT_SECRET_FILE: /run/secrets/jwt_secret
+      VITE_PRODUCT_SERVICE_URL: http://product-service:3000
+    secrets:
+      - jwt_secret
+    networks:
+      - private
+    depends_on:
+      - mongodb
+      - product-service
+
+  mongodb:
+    image: mongo:4.4
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+      restart_policy:
+        condition: on-failure
+    volumes:
+      - mongodb_data:/data/db
+    environment:
+      MONGO_INITDB_DATABASE: ecommerce
+    networks:
+      - private
+
+volumes:
+  mongodb_data:
+    driver: local
+
+networks:
+  public:
+    driver: overlay
+    attachable: true
+  private:
+    driver: overlay
+
+secrets:
+  jwt_secret:
+    external: true
+  ssl_certificate:
+    file: ./certs/site.crt
+  ssl_key:
+    file: ./certs/site.key

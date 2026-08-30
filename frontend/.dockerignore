@@ -1,0 +1,13 @@
+node_modules
+dist
+dist-ssr
+.git
+.gitignore
+.vscode
+.idea
+.env*
+*.log
+npm-debug.log*
+coverage
+test-results
+gl-code-quality-report.json
