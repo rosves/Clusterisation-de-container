@@ -19,12 +19,7 @@ ARG VITE_ORDER_SERVICE_URL
 ENV NODE_ENV=production
 ENV VITE_AUTH_SERVICE_URL=${VITE_AUTH_SERVICE_URL}
 ENV VITE_PRODUCT_SERVICE_URL=${VITE_PRODUCT_SERVICE_URL}
-ENV VITE_ORDER_SERVICE_URL=${VITE_ORDER_SERVICE_URL}#
-
-## Générer le fichier .env.production
-#RUN echo "VITE_AUTH_SERVICE_URL=$VITE_AUTH_SERVICE_URL" > .env.production && \
-#    echo "VITE_PRODUCT_SERVICE_URL=$VITE_PRODUCT_SERVICE_URL" >> .env.production && \
-#    echo "VITE_ORDER_SERVICE_URL=$VITE_ORDER_SERVICE_URL" >> .env.production
+ENV VITE_ORDER_SERVICE_URL=${VITE_ORDER_SERVICE_URL}
 
 RUN npm run build
 
@@ -41,6 +36,9 @@ COPY --from=build-production /app/dist ./dist
 COPY --from=build-production /app/server.cjs ./server.cjs
 
 EXPOSE 8080
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD wget --no-verbose --tries=1 --spider http://localhost:8080/ || exit 1
+
 CMD ["npm", "run", "start"]
 
 ###############################################################
@@ -49,3 +47,5 @@ FROM base AS development
 ENV NODE_ENV=development
 EXPOSE 8080
 CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
+
+
