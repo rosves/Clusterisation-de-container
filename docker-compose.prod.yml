@@ -4,13 +4,10 @@ services:
   frontend:
     image: ${CI_REGISTRY_IMAGE}/frontend:${IMAGE_TAG}
     deploy:
-      replicas: 2
+      replicas: 3
       update_config:
         parallelism: 1
         delay: 10s
-      placement:
-        constraints:
-          - node.role == worker
     environment:
       NODE_ENV: production
       VITE_PRODUCT_SERVICE_URL: http://product-service:3000
@@ -25,9 +22,6 @@ services:
     image: ${CI_REGISTRY_IMAGE}/auth_service:${IMAGE_TAG}
     deploy:
       replicas: 2
-      placement:
-        constraints:
-          - node.role == worker
     environment:
       NODE_ENV: production
       MONGODB_URI: mongodb://mongodb:27017/auth
@@ -39,9 +33,6 @@ services:
     image: ${CI_REGISTRY_IMAGE}/product_service:${IMAGE_TAG}
     deploy:
       replicas: 2
-      placement:
-        constraints:
-          - node.role == worker
     environment:
       NODE_ENV: production
       MONGODB_URI: mongodb://mongodb:27017/ecommerce
@@ -53,9 +44,6 @@ services:
     image: ${CI_REGISTRY_IMAGE}/order_service:${IMAGE_TAG}
     deploy:
       replicas: 2
-      placement:
-        constraints:
-          - node.role == worker
     environment:
       NODE_ENV: production
       MONGODB_URI: mongodb://mongodb:27017/orders
