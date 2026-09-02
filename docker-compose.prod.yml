@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   frontend:
-    image: ${CI_REGISTRY_IMAGE}/frontend:${IMAGE_TAG}
+    image: eliasf1912/ecommerce-frontend:latest
     deploy:
       replicas: 3
       update_config:
@@ -19,7 +19,7 @@ services:
       - ecommerce_net
 
   auth-service:
-    image: ${CI_REGISTRY_IMAGE}/auth_service:${IMAGE_TAG}
+    image: eliasf1912/ecommerce-auth:latest
     deploy:
       replicas: 2
     environment:
@@ -30,7 +30,7 @@ services:
       - ecommerce_net
 
   product-service:
-    image: ${CI_REGISTRY_IMAGE}/product_service:${IMAGE_TAG}
+    image: eliasf1912/ecommerce-product:latest
     deploy:
       replicas: 2
     environment:
@@ -41,7 +41,7 @@ services:
       - ecommerce_net
 
   order-service:
-    image: ${CI_REGISTRY_IMAGE}/order_service:${IMAGE_TAG}
+    image: eliasf1912/ecommerce-order:latest
     deploy:
       replicas: 2
     environment:
