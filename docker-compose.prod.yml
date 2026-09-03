@@ -1,6 +1,22 @@
 version: '3.8'
 
 services:
+  reverse-proxy:
+    image: ecommerce-nginx:local
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./certs/site.crt:/etc/nginx/certs/site.crt:ro
+      - ./certs/site.key:/etc/nginx/certs/site.key:ro
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+    networks:
+      - ecommerce_net
+
   frontend:
     image: eliasf1912/ecommerce-frontend:latest
     deploy:
