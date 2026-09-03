@@ -7,8 +7,9 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      - ./certs/site.crt:/etc/nginx/certs/site.crt:ro
-      - ./certs/site.key:/etc/nginx/certs/site.key:ro
+      - volumes:
+      - /root/Clusterisation-de-container-main/certs/site.crt:/etc/nginx/certs/site.crt:ro
+      - /root/Clusterisation-de-container-main/certs/site.key:/etc/nginx/certs/site.key:ro
     deploy:
       replicas: 1
       placement:
