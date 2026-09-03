@@ -25,7 +25,7 @@ services:
     environment:
       NODE_ENV: production
       MONGODB_URI: mongodb://mongodb:27017/auth
-    command: sh -c "export JWT_SECRET=$(cat /run/secrets/jwt_secret) && node src/app.js"
+    command: sh -c "export JWT_SECRET=$$(cat /run/secrets/jwt_secret) && node src/app.js"
     secrets:
       - jwt_secret
     networks:
@@ -50,7 +50,7 @@ services:
       NODE_ENV: production
       MONGODB_URI: mongodb://mongodb:27017/orders
       VITE_PRODUCT_SERVICE_URL: http://product-service:3000
-    command: sh -c "export JWT_SECRET=$(cat /run/secrets/jwt_secret) && node src/app.js"
+    command: sh -c "export JWT_SECRET=$$(cat /run/secrets/jwt_secret) && node src/app.js"
     secrets:
       - jwt_secret
     networks:
