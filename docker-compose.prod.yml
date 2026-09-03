@@ -25,7 +25,9 @@ services:
     environment:
       NODE_ENV: production
       MONGODB_URI: mongodb://mongodb:27017/auth
-      JWT_SECRET: ${JWT_SECRET}
+    command: sh -c "export JWT_SECRET=$(cat /run/secrets/jwt_secret) && node src/app.js"
+    secrets:
+      - jwt_secret
     networks:
       - ecommerce_net
 
@@ -47,8 +49,10 @@ services:
     environment:
       NODE_ENV: production
       MONGODB_URI: mongodb://mongodb:27017/orders
-      JWT_SECRET: ${JWT_SECRET}
       VITE_PRODUCT_SERVICE_URL: http://product-service:3000
+    command: sh -c "export JWT_SECRET=$(cat /run/secrets/jwt_secret) && node src/app.js"
+    secrets:
+      - jwt_secret
     networks:
       - ecommerce_net
 
@@ -72,3 +76,7 @@ volumes:
 networks:
   ecommerce_net:
     driver: overlay
+
+secrets:
+  jwt_secret:
+    external: true

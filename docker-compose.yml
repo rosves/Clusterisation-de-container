@@ -28,9 +28,8 @@ services:
     environment:
       - NODE_ENV=development
       - MONGODB_URI=mongodb://mongodb:27017/orders
-    command: sh -c "export JWT_SECRET=$(cat /run/secrets/jwt_secret) && node src/app.js"
-    secrets:
-      - jwt_secret
+      - JWT_SECRET=efrei_super_pass
+      - VITE_PRODUCT_SERVICE_URL=http://product-service:3000
     depends_on:
       - mongodb
       - product-service
@@ -53,9 +52,7 @@ services:
     environment:
       - NODE_ENV=development
       - MONGODB_URI=mongodb://mongodb:27017/auth
-      - command: sh -c "export JWT_SECRET=$(cat /run/secrets/jwt_secret) && node src/app.js"
-    secrets:
-      - jwt_secret
+      - JWT_SECRET=efrei_super_pass
     depends_on:
       - mongodb
 
@@ -70,7 +67,3 @@ services:
 
 volumes:
   mongodb_data:
-
-secrets:
-  jwt_secret:
-    external: true
